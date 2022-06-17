@@ -13,38 +13,52 @@ from PyQt5.QtWidgets import QApplication,QWidget, QVBoxLayout, QPushButton, QFil
 from PyQt5.QtGui import QPixmap
 import dolphinVsWhale
 
+
 class Ui_MainWindow(object):
+    
+    global folderPath
+    folderPath = ''
+    
+    global model
+    model = None
+    
+    global textLog
+    textLog = "App was opened\n"
+    
+    global imagePath
+    imagePath = "G:/biai/ds/single_test/0.jpg"
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(640, 480)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.consoleLog = QtWidgets.QScrollArea(self.centralwidget)
-        self.consoleLog.setGeometry(QtCore.QRect(20, 20, 301, 401))
-        self.consoleLog.setWidgetResizable(True)
-        self.consoleLog.setObjectName("consoleLog")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 299, 399))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.consoleLog.setWidget(self.scrollAreaWidgetContents)
-        self.compileAction = QtWidgets.QPushButton(self.centralwidget)
-        self.compileAction.setGeometry(QtCore.QRect(360, 310, 101, 41))
-        self.compileAction.setObjectName("compileAction")
-        self.testBestModel = QtWidgets.QPushButton(self.centralwidget)
-        self.testBestModel.setGeometry(QtCore.QRect(500, 310, 101, 41))
-        self.testBestModel.setObjectName("testBestModel")
-        self.testCurrent = QtWidgets.QPushButton(self.centralwidget)
-        self.testCurrent.setGeometry(QtCore.QRect(500, 370, 101, 41))
-        self.testCurrent.setObjectName("testCurrent")
+        
+        self.textPanel = QtWidgets.QTextBrowser(self.centralwidget)
+        self.textPanel.setGeometry(QtCore.QRect(20, 20, 301, 401))
+        self.textPanel.setObjectName("textPanel")
+
+        self.widgetPhoto = QtWidgets.QWidget(self.centralwidget)
+        self.widgetPhoto.setGeometry(QtCore.QRect(330, 70, 300, 180))
+        self.widgetPhoto.setObjectName("widgetPhoto")
+        self.Photo = QtWidgets.QLabel(self.widgetPhoto)
+        self.Photo.setGeometry(QtCore.QRect(0, 0, 300, 180))
+        self.Photo.setObjectName("Photo")
+        self.Photo.setPixmap(QtGui.QPixmap("G:/biai/ds/single_test/0.jpg"))
+        self.Photo.setScaledContents(True)
+        self.Photo.setText("")
+        self.createModel = QtWidgets.QPushButton(self.centralwidget)
+        self.createModel.setGeometry(QtCore.QRect(360, 310, 101, 41))
+        self.createModel.setObjectName("createModel")
+        self.testModel = QtWidgets.QPushButton(self.centralwidget)
+        self.testModel.setGeometry(QtCore.QRect(500, 310, 101, 41))
+        self.testModel.setObjectName("testModel")
+        self.testCurrentImage = QtWidgets.QPushButton(self.centralwidget)
+        self.testCurrentImage.setGeometry(QtCore.QRect(500, 370, 101, 41))
+        self.testCurrentImage.setObjectName("testCurrentImage")
         self.loadBest = QtWidgets.QPushButton(self.centralwidget)
         self.loadBest.setGeometry(QtCore.QRect(360, 370, 101, 41))
         self.loadBest.setObjectName("loadBest")
-        self.labelPhoto = QtWidgets.QLabel(self.centralwidget)
-        self.labelPhoto.setGeometry(QtCore.QRect(330, 90, 301, 151))
-        self.labelPhoto.setText("")
-        self.labelPhoto.setPixmap(QtGui.QPixmap("G:/biai/ds/single_test/0.jpg"))
-        self.labelPhoto.setScaledContents(True)
-        self.labelPhoto.setObjectName("labelPhoto")
         self.title = QtWidgets.QLabel(self.centralwidget)
         self.title.setGeometry(QtCore.QRect(330, 20, 301, 41))
         font = QtGui.QFont()
@@ -73,30 +87,91 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.actionAdd_Image.triggered.connect(self.clickAddImg)
+        self.actionAdd_Image.triggered.connect(lambda: self.clickAddImg(self.widgetPhoto))
+        self.actionAdd_Model.triggered.connect(lambda: self.clickLoadModel(self.widgetPhoto))
+        self.loadBest.clicked.connect(self.clickLoadBestModel)
+        self.createModel.clicked.connect(self.clickCreateModel)
+        self.testModel.clicked.connect(self.clickTestModel)
+        self.testCurrentImage.clicked.connect(self.clickTestCurrentImage)
 
-    def clickAddImg(self):
-        filename = QFileDialog.getOpenFileName(self, 'Open File', 'G:/biai/ds/single_test/')#,"Image files (*.jpg)")
-        fname = open(filename)
-        data = fname.read()
-        self.labelPhoto.setPixmap(QPixmap(data))
-        fname.close()
+    def insertToTextLog(self,text):
+        global textLog
+        textLog += (text + "\n")
+        self.textPanel.setText(textLog)
+
+    def clickTestCurrentImage(self):
+        global model
+        global imagePath
+
+        if not (model):
+            self.insertToTextLog("Model doesn't exist yet")
+            return
+
+        self.insertToTextLog(dolphinVsWhale.testImage(model,imagePath))
+
+    def clickTestModel(self):
+        global model
+        if(model):
+            print(model.summary)
+        self.insertToTextLog(dolphinVsWhale.testModel(model))
+
+    def clickCreateModel(self):
+        global model
+        model = dolphinVsWhale.createModel()
+        self.insertToTextLog("Created new model")
+
+    def clickLoadBestModel(self):
+        global folderPath
+        global model
+        folderPath = 'G:/biai/models/my_model_current_89%_softmax_10epoch/'
+        model = dolphinVsWhale.loadModel(folderPath)
+       
+        self.insertToTextLog("Loaded Best model")
+
+    def clickLoadModel(self,widgetPhoto):
+        global folderPath
+        global model
+        folderPath = QFileDialog.getExistingDirectory(widgetPhoto, "Select Directory",'G:/biai/models/')
+        if not (folderPath):
+            return
+
+        self.insertToTextLog("Loaded new model")
+        model = dolphinVsWhale.loadModel(folderPath)
+
+
+    def clickAddImg(self,widgetPhoto):
+        fname = QFileDialog.getOpenFileName(widgetPhoto, 'Open Image','G:/biai/ds/single_test/', "Image files (*.jpg)")
+        
+        if not (fname):
+            return
+
+        #set path of image
+        global imagePath 
+
+        imagePath = fname[0]
+        pixmap = QPixmap(imagePath)
+        pixmap = pixmap.scaled(300,180,1)
+        self.Photo.setPixmap(pixmap)
+        self.insertToTextLog("Added new image " + imagePath)
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.compileAction.setText(_translate("MainWindow", "Compile Model"))
-        self.testBestModel.setText(_translate("MainWindow", "Test Model"))
-        self.testBestModel.setShortcut(_translate("MainWindow", "Ctrl+C"))
-        self.testCurrent.setText(_translate("MainWindow", "Test current image"))
+        self.createModel.setText(_translate("MainWindow", "Create new Model"))
+        self.testModel.setText(_translate("MainWindow", "Test Model"))
+        self.testModel.setShortcut(_translate("MainWindow", "Ctrl+C"))
+        self.testCurrentImage.setText(_translate("MainWindow", "Test current image"))
         self.loadBest.setText(_translate("MainWindow", "Load Best Model"))
         self.title.setText(_translate("MainWindow", "Check if its a whale or a dolphin"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionAdd_Image.setText(_translate("MainWindow", "Add Image"))
         self.actionAdd_Image.setShortcut(_translate("MainWindow", "Ctrl+I"))
-        self.actionAdd_Model.setText(_translate("MainWindow", "Add Model"))
+        self.actionAdd_Model.setText(_translate("MainWindow", "Load Model"))
         self.actionAdd_Model.setShortcut(_translate("MainWindow", "Ctrl+M"))
-
+        
+        global textLog
+        self.textPanel.setText(_translate('MainWindow',textLog))
 
 if __name__ == "__main__":
     import sys

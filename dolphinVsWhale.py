@@ -10,7 +10,7 @@ import os
 from tensorflow import keras
 from keras.models import Sequential
 from keras.optimizers import adam_v2
-from keras.layers import Activation, Dense, Flatten, BatchNormalization, Conv2D, MaxPool2D
+from keras.layers import Dense, Flatten, Conv2D, MaxPool2D
 from keras.metrics import categorical_crossentropy
 from keras.preprocessing.image import ImageDataGenerator
 import cv2
@@ -94,14 +94,14 @@ def createModel():
     ])
 
     #compile a model (takes about 20 min)
-    model.compile(optimizer=adam_v2.Adam(learning_rate=0.00001), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=adam_v2.Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
     #validate model with valid_vatches
     model.fit(x=train_batches,
             steps_per_epoch=len(train_batches),
             validation_data=valid_batches,
             validation_steps=len(valid_batches),
-            epochs=10,
+            epochs=1,
             verbose=2
             )
 

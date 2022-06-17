@@ -9,27 +9,21 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication,QWidget, QVBoxLayout, QPushButton, QFileDialog , QLabel, QTextEdit
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
-import dolphinVsWhale
+from PyQt5 import QtCore
+import tensorflowModel
 
 
 class Ui_MainWindow(object):
     
-    global folderPath
     folderPath = ''
-    
-    global model
     model = None
-    
-    global textLog
     textLog = "App was opened\n"
-    
-    global imagePath
     imagePath = "G:/biai/ds/single_test/0.jpg"
 
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
+        MainWindow.setObjectName("TestImagePython")
         MainWindow.resize(640, 480)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -95,48 +89,38 @@ class Ui_MainWindow(object):
         self.testCurrentImage.clicked.connect(self.clickTestCurrentImage)
 
     def insertToTextLog(self,text):
-        global textLog
-        textLog += (text + "\n")
-        self.textPanel.setText(textLog)
+        self.textLog += (text + "\n")
+        self.textPanel.setText(self.textLog)
 
     def clickTestCurrentImage(self):
-        global model
-        global imagePath
-
-        if not (model):
+        if not (self.model):
             self.insertToTextLog("Model doesn't exist yet")
             return
 
-        self.insertToTextLog(dolphinVsWhale.testImage(model,imagePath))
+        self.insertToTextLog(tensorflowModel.testImage(self.model,self.imagePath))
 
     def clickTestModel(self):
-        global model
-        if(model):
-            print(model.summary)
-        self.insertToTextLog(dolphinVsWhale.testModel(model))
+        if not (self.model):
+            return
+        self.insertToTextLog(tensorflowModel.testModel(self.model))
 
     def clickCreateModel(self):
-        global model
-        model = dolphinVsWhale.createModel()
+        self.model = tensorflowModel.createModel()
         self.insertToTextLog("Created new model")
 
     def clickLoadBestModel(self):
-        global folderPath
-        global model
-        folderPath = 'G:/biai/models/my_model_current_89%_softmax_10epoch/'
-        model = dolphinVsWhale.loadModel(folderPath)
-       
+        self.folderPath = 'G:/biai/models/best_model/'
+        self.model = tensorflowModel.loadModel(self.folderPath)
         self.insertToTextLog("Loaded Best model")
 
     def clickLoadModel(self,widgetPhoto):
-        global folderPath
-        global model
-        folderPath = QFileDialog.getExistingDirectory(widgetPhoto, "Select Directory",'G:/biai/models/')
-        if not (folderPath):
+    
+        self.folderPath = QFileDialog.getExistingDirectory(widgetPhoto, "Select Directory",'G:/biai/models/')
+        if not (self.folderPath):
             return
 
         self.insertToTextLog("Loaded new model")
-        model = dolphinVsWhale.loadModel(folderPath)
+        self.model = tensorflowModel.loadModel(self.folderPath)
 
 
     def clickAddImg(self,widgetPhoto):
@@ -145,19 +129,18 @@ class Ui_MainWindow(object):
         if not (fname):
             return
 
-        #set path of image
-        global imagePath 
-
-        imagePath = fname[0]
-        pixmap = QPixmap(imagePath)
+        self.imagePath = fname[0]
+        pixmap = QPixmap(self.imagePath)
         pixmap = pixmap.scaled(300,180,1)
         self.Photo.setPixmap(pixmap)
-        self.insertToTextLog("Added new image " + imagePath)
+        self.insertToTextLog("Added new image " + self.imagePath)
 
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowIcon(QtGui.QIcon("./icon.webp"))
+
         self.createModel.setText(_translate("MainWindow", "Create new Model"))
         self.testModel.setText(_translate("MainWindow", "Test Model"))
         self.testModel.setShortcut(_translate("MainWindow", "Ctrl+C"))
@@ -169,9 +152,7 @@ class Ui_MainWindow(object):
         self.actionAdd_Image.setShortcut(_translate("MainWindow", "Ctrl+I"))
         self.actionAdd_Model.setText(_translate("MainWindow", "Load Model"))
         self.actionAdd_Model.setShortcut(_translate("MainWindow", "Ctrl+M"))
-        
-        global textLog
-        self.textPanel.setText(_translate('MainWindow',textLog))
+        self.textPanel.setText(_translate('MainWindow',self.textLog))
 
 if __name__ == "__main__":
     import sys

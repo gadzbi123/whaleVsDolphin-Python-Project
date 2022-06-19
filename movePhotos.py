@@ -3,7 +3,7 @@ import shutil as sh
 import numpy as np
 
 
-data = pd.read_csv('train.csv')
+data = pd.read_csv('./csv/train.csv')
 a = data.head(50000)
 
 i = 0
@@ -36,4 +36,4 @@ for idx, img in enumerate(a.values):
 
 print("whale " + str(hw_count), ", dolphin " + str(bd_count))
 df = pd.DataFrame(data_to_store)
-df.to_csv("./test.csv", index=False)
+df.to_csv("./csv/test.csv", index=False)

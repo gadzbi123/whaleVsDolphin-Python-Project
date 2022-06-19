@@ -21,9 +21,9 @@ tfds.disable_progress_bar()
 tf.get_logger().setLevel('INFO')
 
 
-train_path = 'ds/train'  # path for training images
-valid_path = 'ds/valid'  # path for validation images
-test_path = 'ds/test'  # path for testing images
+train_path = './ds/train'  # path for training images
+valid_path = './ds/valid'  # path for validation images
+test_path = './ds/test'  # path for testing images
 
 # process and scale images and put them in batches with set classes, batches sized 10 images each
 # batches contain images and their labels
@@ -83,11 +83,11 @@ def createModel():
         Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),  # 28
         Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),
         MaxPool2D(pool_size=(2, 2), strides=2),
-        Dropout(0.25),
+        #Dropout(0.25),
         Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),  # 14
         Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),
         MaxPool2D(pool_size=(2, 2), strides=2),
-        Dropout(0.25),  # makes sure not to overtrain
+        #Dropout(0.25),  # makes sure not to overtrain
         Flatten(),  # 1d array
         #Dense(units=2, activation='relu'),
         Dense(units=2, activation='softmax')
@@ -104,7 +104,7 @@ def createModel():
             steps_per_epoch=len(train_batches),
             validation_data=valid_batches,
             validation_steps=len(valid_batches),
-            epochs=10,
+            epochs=1,
             verbose=2
             )
 

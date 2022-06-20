@@ -8,6 +8,7 @@ import tensorflowModel
 
 class Ui_MainWindow(object):
     
+    #variables needed to work in the program
     folderPath = ''
     model = None
     textLog = "App was opened\n"
@@ -29,7 +30,7 @@ class Ui_MainWindow(object):
         self.Photo = QtWidgets.QLabel(self.widgetPhoto)
         self.Photo.setGeometry(QtCore.QRect(0, 0, 300, 180))
         self.Photo.setObjectName("Photo")
-        self.Photo.setPixmap(QtGui.QPixmap("./ds/single_test/0.jpg"))
+        self.Photo.setPixmap(QtGui.QPixmap(self.imagePath))
         self.Photo.setScaledContents(True)
         self.Photo.setText("")
         self.createModel = QtWidgets.QPushButton(self.centralwidget)
@@ -72,6 +73,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        #register a button click
         self.actionAdd_Image.triggered.connect(lambda: self.clickAddImg(self.widgetPhoto))
         self.actionAdd_Model.triggered.connect(lambda: self.clickLoadModel(self.widgetPhoto))
         self.loadBest.clicked.connect(self.clickLoadBestModel)
@@ -79,10 +81,12 @@ class Ui_MainWindow(object):
         self.testModel.clicked.connect(self.clickTestModel)
         self.testCurrentImage.clicked.connect(self.clickTestCurrentImage)
 
+    #print text to text panel
     def insertToTextLog(self,text):
         self.textLog += (text + "\n")
         self.textPanel.setText(self.textLog)
 
+    #test current image after a click
     def clickTestCurrentImage(self):
         if not (self.model):
             self.insertToTextLog("Model doesn't exist yet")
@@ -98,45 +102,53 @@ class Ui_MainWindow(object):
             if img[0] == self.imagePath[startIndex+1:]:
                 self.insertToTextLog("In the picture you can see: " + img[1])
            
-
+    #Tests a loaded model after a click of a button
     def clickTestModel(self):
         if not (self.model):
             return
         self.insertToTextLog(tensorflowModel.testModel(self.model))
 
+    #creates a model with a click (takes some time)
     def clickCreateModel(self):
         self.model = tensorflowModel.createModel()
         self.insertToTextLog("Created new model")
 
+    #loades the best model from a path
     def clickLoadBestModel(self):
         self.folderPath = './models/best_model/'
         self.model = tensorflowModel.loadModel(self.folderPath)
         self.insertToTextLog("Loaded Best model")
 
+    #loades a model choosen by the user
     def clickLoadModel(self,widgetPhoto):
-    
+        
+        #prompt to choose folder
         self.folderPath = QFileDialog.getExistingDirectory(widgetPhoto, "Select Directory",'./models/')
         if not (self.folderPath):
             return
 
-        self.insertToTextLog("Loaded new model")
+        #loading a model from a given path
         self.model = tensorflowModel.loadModel(self.folderPath)
+        self.insertToTextLog("Loaded new model")
         self.model.summary()
 
-
+    #adding a image with a button click
     def clickAddImg(self,widgetPhoto):
+        #open a file from os dir
         fname = QFileDialog.getOpenFileName(widgetPhoto, 'Open Image','./ds/single_test/', "Image files (*.jpg)")
         
+        #check if the img was choosen and exists
         if not (fname) or fname[0] == '':
             return
-            
+        
+        #add image to path and display it
         self.imagePath = fname[0]
         pixmap = QPixmap(self.imagePath)
         pixmap = pixmap.scaled(300,180,1)
         self.Photo.setPixmap(pixmap)
         self.insertToTextLog("Added new image " + self.imagePath)
 
-
+    #names of buttons
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -155,6 +167,7 @@ class Ui_MainWindow(object):
         self.actionAdd_Model.setShortcut(_translate("MainWindow", "Ctrl+M"))
         self.textPanel.setText(_translate('MainWindow',self.textLog))
 
+#main loop
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

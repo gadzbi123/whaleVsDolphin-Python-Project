@@ -1,3 +1,4 @@
+#python 3.7.9 recommended
 from numpy import random
 from numpy.lib.npyio import load
 import tensorflow as tf
@@ -15,7 +16,7 @@ from keras.metrics import categorical_crossentropy
 from keras.preprocessing.image import ImageDataGenerator
 import cv2
 
-
+#disable nvidia graphics card acceleration with cuda
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 tfds.disable_progress_bar()
 tf.get_logger().setLevel('INFO')
@@ -35,10 +36,12 @@ test_batches = ImageDataGenerator(preprocessing_function=tf.keras.applications.v
     .flow_from_directory(directory=test_path, target_size=(224, 224), classes=['dolphin', 'whale'], batch_size=10,
                          shuffle=False)
 
+#returns the accuracy value of given model
 def testModel(model):
     loss, acc = model.evaluate(test_batches, verbose=2)
     return ("Tested model, accuracy: {:5.2f}%".format(100 * acc))
 
+#testing a single given image to check if its a dolphin or a whale
 def testImage(loadedModel,imagePath):
 
     # load and convert image to RGB
@@ -63,6 +66,7 @@ def testImage(loadedModel,imagePath):
         predictionResult = 'dolphin ' + formatted_float + '%'
     return predictionResult
 
+#returns a loaded model from a given path
 def loadModel(path):
     loaded_model = keras.models.load_model(path)
     return loaded_model
@@ -83,11 +87,11 @@ def createModel():
         Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),  # 28
         Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),
         MaxPool2D(pool_size=(2, 2), strides=2),
-        #Dropout(0.25),
+        Dropout(0.25),
         Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),  # 14
         Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),
         MaxPool2D(pool_size=(2, 2), strides=2),
-        #Dropout(0.25),  # makes sure not to overtrain
+        Dropout(0.25),  # makes sure not to overtrain
         Flatten(),  # 1d array
         #Dense(units=2, activation='relu'),
         Dense(units=2, activation='softmax')
